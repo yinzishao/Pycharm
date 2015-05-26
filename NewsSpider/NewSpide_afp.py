@@ -2,22 +2,27 @@ __author__ = 'yinzishao'
 # -*- coding: utf-8 -*-
 import urllib2
 import re
+from tool import *
 from bs4 import BeautifulSoup
-#得到链接的源代码
-def geturl_con(url):
-    try:
-        response =urllib2.urlopen(url)
-        html = response.read()
-    except urllib2.HTTPError, e:
-        print e.code
-    return html
+
+
+
+
+# urlset = set()
+
+
 
 #得到链接的新闻链接
 def findurl(html):
     soup =BeautifulSoup(html)
     res = soup.find_all('h3',class_='title')
-    print res
-    # print res.h3.a['href']
+    print len(res)
+    uset =set()
+    for r in res:
+         uset.add(afp+str(r.a['href']))
+    return uset
+
+#判断是否有下一页
 def hasnext(html):
     soup = BeautifulSoup(html)
     next = soup.find('li',class_='pager-next')  #找出下一页
@@ -26,22 +31,42 @@ def hasnext(html):
     else :
         return False
 
-t = geturl_con('http://www.afp.com/en/search/site/21st-century%20maritime%20silk%20road/?page=1')
-findurl(t)
-
-if __name__ == '__main__':
-    starurl ='http://www.afp.com/en/search/site/21st-century%20maritime%20silk%20road/?page='
+#keyword搜索关键词,得到路径
+def geturl(keyword):
+    uset= set()
+    res = re.sub(r' ','%20',keyword)
+    last ='/?page='
+    starurl = searchurl+res+last     #得到路径
     page =1
-    html =geturl_con(starurl+str(page))
-    findurl(html)
+    rl =starurl+str(page)
+    print rl
+    html =geturl_con(rl)
+    temp =findurl(html)
+    # print temp
+    # print uset
+    # print uset|temp
+    # print len(findurl(html))
+    uset =uset|findurl(html)
+
 
     while True:
         if hasnext(html):
             page =page+1
-            html =geturl_con(starurl+str(page))
-
+            rl =starurl+str(page)
+            # print rl
+            html =geturl_con(rl)
+            uset =uset|findurl(html)
             print page
+            print len(uset)
         else:
             break
 
+    return uset
+
+if '__main__' == __name__:
+    a=geturl('21st-century maritime silk road')
+    b=geturl('silk road economic belt')
+    c=a&b
+    print len(c)
+    # write('apfurl.txt',urlset)
 
