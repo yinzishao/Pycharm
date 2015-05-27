@@ -4,14 +4,6 @@ import urllib2
 import re
 from tool import *
 from bs4 import BeautifulSoup
-
-
-
-
-# urlset = set()
-
-
-
 #得到链接的新闻链接
 def findurl(html):
     soup =BeautifulSoup(html)
