@@ -6,12 +6,17 @@ import urllib2
 from tool import *
 import re
 from bs4 import BeautifulSoup
+import sys
+import ConnectedSQL
+
+reload(sys)
+sys.setdefaultencoding('utf-8')
 surl = 'http://www.reuters.com/search/news?blob='
 TOTALNUM=0
 
 
 #输入关键词得到链接
-def search(keyword):
+def search(keyword,path='reuters.txt'):
     urlset = set()
     global TOTALNUM
     keywordchange=re.sub(r' ','+',keyword)  #转换成url所需格式
@@ -40,7 +45,7 @@ def search(keyword):
 
     print len(urlset)
 
-    with open('reuters.txt','w')as r:
+    with open(path,'w')as r:
         for url in urlset:
             r.writelines(url+'\n')
 
@@ -72,4 +77,63 @@ def geturl(html):
     else:
             return urlset
 
-search('21st-century maritime silk road')
+def crawlcontent(url,i=1):
+    retry =3
+    while(retry>0):
+        try:
+            response = urllib2.urlopen(url)
+            html =response.read()
+            print str(i)+'\n'
+            soup  = BeautifulSoup(html)
+            title =str(soup.find('h1',class_='article-headline').get_text())
+            print title
+            time = str(soup.find('span',class_='timestamp').get_text())
+            print time
+
+            content = soup.find('span',id='articleText')
+            content= str(content.get_text())
+            # re.compile('\n')
+            content =re.sub('\n',' ',content)
+            print content
+            r = re.compile(r'\((((W|w)riting)|((e|E)diting)|((R|r)eporting)).*?(b|B)y (.*?)(;|\))')
+
+            # r = re.compile(r'\((Writing)|(Editing)|(Reporting).*?(b|B)y (.*?)(;|\))')
+            try:
+                author =re.search(r,content).group(9)
+                print author
+            except Exception,e:
+                print e
+                author =None
+            l=[url,author,title,time,content]
+            #连接数据库并且提交数据
+            # ConnectedSQL.commit_data(l)
+
+
+            break
+        except urllib2.URLError,e:
+            print 'url error:', e
+            retry = retry - 1
+
+            continue
+        except Exception, e:
+            print 'error:', e
+            retry = retry - 1
+            # self.randomSleep()
+            continue
+
+def readurl(path='reuters.txt'):
+    i=1
+    for line in open(path):
+        crawlcontent(line.strip(),i)
+        i+=1
+
+# readurl()
+# crawlcontent('http://www.reuters.com/article/idUSFit91970120150415')
+# search('21st-century maritime silk road')
+
+#输入关键字以及保存链接的路径
+if __name__ == '__main__':
+    keyword = ''
+    path = ''
+    search(keyword,path)
+    readurl(path)
