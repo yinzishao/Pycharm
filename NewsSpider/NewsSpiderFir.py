@@ -138,7 +138,7 @@ def crawlcontent(url,i=1):
                         contenttemp.append(content)
                 # w.write(content)
                 content =''.join(contenttemp)              #得到内容
-                l=[url,author,title,time,content]
+                l=[url,title,author,time,content]
                 #连接数据库并且提交数据
                 ConnectedSQL.commit_data(l)
                 break

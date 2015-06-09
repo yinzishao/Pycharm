@@ -79,22 +79,27 @@ def geturl(html):
 
 def crawlcontent(url,i=1):
     retry =3
-    while(retry>0):
+    while retry>0:
         try:
             response = urllib2.urlopen(url)
             html =response.read()
             print str(i)+'\n'
+            w.write(str(i)+'\n')
+            w.write(url+'\n')
             soup  = BeautifulSoup(html)
             title =str(soup.find('h1',class_='article-headline').get_text())
             print title
+            w.write(title+'\n')
             time = str(soup.find('span',class_='timestamp').get_text())
             print time
+            w.write(time+'\n')
 
             content = soup.find('span',id='articleText')
             content= str(content.get_text())
             # re.compile('\n')
             content =re.sub('\n',' ',content)
             print content
+            w.write(content+'\n')
             r = re.compile(r'\((((W|w)riting)|((e|E)diting)|((R|r)eporting)).*?(b|B)y (.*?)(;|\))')
 
             # r = re.compile(r'\((Writing)|(Editing)|(Reporting).*?(b|B)y (.*?)(;|\))')
@@ -104,11 +109,15 @@ def crawlcontent(url,i=1):
             except Exception,e:
                 print e
                 author =None
-            l=[url,author,title,time,content]
+            w.write(str(author)+'\n')
+            l=[url,title,author,time,content]
             #连接数据库并且提交数据
             # ConnectedSQL.commit_data(l)
 
 
+            break
+        except AttributeError,e:
+            print 'AttributeError:',e
             break
         except urllib2.URLError,e:
             print 'url error:', e
@@ -116,12 +125,12 @@ def crawlcontent(url,i=1):
 
             continue
         except Exception, e:
-            print 'error:', e
+            print 'error:', type(e)
             retry = retry - 1
             # self.randomSleep()
             continue
 
-def readurl(path='reuters.txt'):
+def readurl(path='silkroadurl_retuer.txt'):
     i=1
     for line in open(path):
         crawlcontent(line.strip(),i)
@@ -133,7 +142,9 @@ def readurl(path='reuters.txt'):
 
 #输入关键字以及保存链接的路径
 if __name__ == '__main__':
-    keyword = ''
-    path = ''
-    search(keyword,path)
-    readurl(path)
+    # keyword = ''
+    # path = ''
+    # search(keyword,path)
+    with open('retuer_conment2.txt','w') as w:
+        readurl()
+
