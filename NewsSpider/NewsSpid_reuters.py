@@ -76,17 +76,19 @@ def geturl(html):
             return urlset
     else:
             return urlset
+#按照url title  time content author格式写进文档
 
-def crawlcontent(url,i=1):
+def crawlcontent(url,w,i=1):
     retry =3
     while retry>0:
         try:
             response = urllib2.urlopen(url)
             html =response.read()
             print str(i)+'\n'
-            w.write(str(i)+'\n')
-            w.write(url+'\n')
+            # w.write(str(i)+'\n')
+
             soup  = BeautifulSoup(html)
+            w.write(url+'\n')
             title =str(soup.find('h1',class_='article-headline').get_text())
             print title
             w.write(title+'\n')
@@ -130,21 +132,22 @@ def crawlcontent(url,i=1):
             # self.randomSleep()
             continue
 
-def readurl(path='silkroadurl_retuer.txt'):
-    i=1
-    for line in open(path):
-        crawlcontent(line.strip(),i)
-        i+=1
+def readurl(wpath,path='silkroadurl_retuer.txt'):
+    with open(wpath,'w') as w:
+        i=1
+        for line in open(path):
+            crawlcontent(line.strip(),w,i)
+            i+=1
 
 # readurl()
 # crawlcontent('http://www.reuters.com/article/idUSFit91970120150415')
 # search('21st-century maritime silk road')
+#读取链接文档后将内容写进path中
+
 
 #输入关键字以及保存链接的路径
 if __name__ == '__main__':
     # keyword = ''
     # path = ''
     # search(keyword,path)
-    with open('retuer_conment2.txt','w') as w:
-        readurl()
-
+    readurl('retuer111111.txt')
