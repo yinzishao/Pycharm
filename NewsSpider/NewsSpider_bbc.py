@@ -30,7 +30,7 @@ def extractUrl(html):
 #     print result.get_text().strip()
 
 #根据关键词爬取所有链接
-def _crawl_bbc(keywork):
+def crawl_bbc(keywork):
     keywork = re.sub(' ','+',keywork)
     page = 1
     totalnum='100'
@@ -58,6 +58,8 @@ def _crawl_bbc(keywork):
     print len(allurl)
     writeurl()
 
+#把allurl 链接写进txt
+
 def writeurl(path='bbc_allurl.txt'):
     with open(path,'w') as bw:
         with open('bbc_newurl.txt','w') as bnw:
@@ -67,14 +69,20 @@ def writeurl(path='bbc_allurl.txt'):
                     bnw.write(url+'\n')
                     print url
 
-def extractContent(html):
-
+def extractContent(html,i=1):
+    print i,'.'
     soup = BeautifulSoup(html)
     title =soup.find('h1',class_='story-body__h1')
-    title = title.get_text().strip()
+    if type(title) is types.NoneType:
+        title =None
+    else:
+        title = title.get_text().strip()
     print title
     author =soup.find('span',class_='byline__name')
-    author =author.get_text().strip()
+    if type(author) is types.NoneType:
+        author =None
+    else:
+        author =author.get_text().strip()
 
 
     # r = re.compile(r'date\sdate--v\d')
@@ -93,22 +101,31 @@ def extractContent(html):
     content = re.sub(sub_jian,' ',str(content))
     content = re.sub(sub_huanhang,' ',str(content))
     print content
+    l =[title,author,time,content]
+    return l
 def readurl(path='bbc_newurl.txt'):
     with open(path,'r') as br:
         urls = br.readlines()
+    i =1
+    contentlist =list()
     for url in urls:
         response = urllib2.urlopen(url)
         html = response.read()
-        extractContent(html)
+        l=extractContent(html,i)
+        l.insert(0,url)
+        contentlist.append(l)
+        print len(contentlist)
+        i+=1
 if __name__ =='__main__':
     # _crawl_bbc('silk road')
-    # readurl()
-    response = urllib2.urlopen('http://www.bbc.co.uk/news/uk-england-london-16665132')
-    html = response.read()
-    extractContent(html)
+    readurl()
+    # response = urllib2.urlopen('http://www.bbc.co.uk/news/uk-england-london-16665132')
+    # html = response.read()
+    # extractContent(html)
 
 
 
+    # print l
     # a = '<div class="date date--v2" data-seconds="1327328123" data-datetime="23 January 2012">23 January 2012</div>'
     # result = re.search(r'date\sdate--v\d',a)
     # print result.group()
