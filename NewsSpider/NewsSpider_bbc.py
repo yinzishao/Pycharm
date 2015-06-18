@@ -1,11 +1,15 @@
 #coding=utf-8
+import ConnectedSQL
+
 __author__ = 'yinzishao'
 import urllib2
 from bs4 import BeautifulSoup
 import re
 import types
 allurl= set()
-
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
 #爬取结果总数
 def extractTotalnum(html):
     result = re.search(r'data-total-results="(.*?)"',html)
@@ -83,24 +87,35 @@ def extractContent(html,i=1):
         author =None
     else:
         author =author.get_text().strip()
-
+    print author
 
     # r = re.compile(r'date\sdate--v\d')
     # time =soup.find('div',class_=re.compile(r'date date--v2'))
-    time =soup.find('div',attrs={"class":'date date--v2'})
-    time =time.get_text().strip()
-    content = soup.find('div',class_='story-body__inner')
-    print author
+
+    t =soup.find('div',class_='story-body')
+    time =t.find(True,{'data-seconds':True})
+    if type(time) is types.NoneType:
+        time =None
+    else:
+        time =time.get_text().strip()
+
     print time
-    sub_fig = re.compile(r'<figure(\s|\S)*?</figure>')
-    sub_scr = re.compile(r'<script(\s|\S)*?</script>')
-    sub_jian = re.compile(r'<(\s|\S)*?>')
-    sub_huanhang =re.compile(r'\n')
-    content = re.sub(sub_fig,' ',str(content))
-    content = re.sub(sub_scr,' ',str(content))
-    content = re.sub(sub_jian,' ',str(content))
-    content = re.sub(sub_huanhang,' ',str(content))
+
+    content = soup.find('div',class_=['story-body__inner','map-body'])
+    if type(content)is types.NoneType:
+        content =None
+    else:
+        sub_fig = re.compile(r'<figure(\s|\S)*?</figure>')
+        sub_scr = re.compile(r'<script(\s|\S)*?</script>')
+        sub_jian = re.compile(r'<(\s|\S)*?>')
+        sub_huanhang =re.compile(r'\n')
+        content = re.sub(sub_fig,' ',str(content))
+        content = re.sub(sub_scr,' ',str(content))
+        content = re.sub(sub_jian,' ',str(content))
+        content = re.sub(sub_huanhang,' ',str(content))
     print content
+
+
     l =[title,author,time,content]
     return l
 def readurl(path='bbc_newurl.txt'):
@@ -108,22 +123,53 @@ def readurl(path='bbc_newurl.txt'):
         urls = br.readlines()
     i =1
     contentlist =list()
-    for url in urls:
-        response = urllib2.urlopen(url)
-        html = response.read()
-        l=extractContent(html,i)
-        l.insert(0,url)
-        contentlist.append(l)
-        print len(contentlist)
-        i+=1
+    with open('bbc_contetn.txt','w') as bbcw:
+        for url in urls:
+            retry =3
+            while retry>0:
+                try:
+                    response = urllib2.urlopen(url)
+                    html = response.read()
+                    l=extractContent(html,i)
+                    l.insert(0,url.strip())
+                    bbcw.write(str(i)+'.\n')
+                    for a in l:
+                        # print a
+                        bbcw.write(str(a)+'\n')
+                    contentlist.append(l)
+                    print len(contentlist)
+
+                    break
+                except Exception,e:
+                    print e
+                    retry -=1
+                    continue
+            i+=1
+
+#上传数据
+def process_bbc(path='bbc_contetn.txt'):
+    with open(path,'r') as r:
+        line =r.readline()
+        while(line):
+            url =r.readline()
+            title =r.readline()
+            author = r.readline()
+            time = r.readline()
+            content = r.readline()
+            l =[url,title,author,time,content]
+            ConnectedSQL.commit_data(l)
+            # print l
+            line =r.readline()
+
 if __name__ =='__main__':
     # _crawl_bbc('silk road')
-    readurl()
-    # response = urllib2.urlopen('http://www.bbc.co.uk/news/uk-england-london-16665132')
+    # readurl()
+    process_bbc()
+    # response = urllib2.urlopen('http://www.bbc.com/news/world-asia-china-19328092')
     # html = response.read()
     # extractContent(html)
 
-
+    # extractContent()
 
     # print l
     # a = '<div class="date date--v2" data-seconds="1327328123" data-datetime="23 January 2012">23 January 2012</div>'
