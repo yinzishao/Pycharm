@@ -235,6 +235,7 @@ class GoogleAPI:
                         retry = retry - 1
                         continue
                     else:
+
                         search_results.extend(results)
                         break;
                     # print len(results)

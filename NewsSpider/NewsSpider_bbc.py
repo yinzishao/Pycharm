@@ -168,9 +168,7 @@ if __name__ =='__main__':
     # response = urllib2.urlopen('http://www.bbc.com/news/world-asia-china-19328092')
     # html = response.read()
     # extractContent(html)
-
     # extractContent()
-
     # print l
     # a = '<div class="date date--v2" data-seconds="1327328123" data-datetime="23 January 2012">23 January 2012</div>'
     # result = re.search(r'date\sdate--v\d',a)

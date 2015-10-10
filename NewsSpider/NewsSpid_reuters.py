@@ -8,7 +8,6 @@ import re
 from bs4 import BeautifulSoup
 import sys
 import ConnectedSQL
-
 reload(sys)
 sys.setdefaultencoding('utf-8')
 surl = 'http://www.reuters.com/search/news?blob='
