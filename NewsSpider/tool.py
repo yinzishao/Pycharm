@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 __author__ = 'yinzishao'
 import urllib2
+
 import re
 afp = 'http://www.afp.com/'
 searchurl ='http://www.afp.com/en/search/site/'
