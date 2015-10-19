@@ -42,6 +42,7 @@ def make_cookie(name,value):
     )
     return cookie
 
+    """得到吧的主页链接"""
 def get_barurl(name):
     url='http://tieba.baidu.com/f?kw='
     url=url+urllib.quote(str(name))
@@ -60,6 +61,8 @@ def add_sign(name,value):
     except:
         print("签到%s失败" %name)
         return 0
+
+    """ 匹配贴吧的所有吧 """
 def match_bar(string):
     result=[]
     a=r'title="(.+?)">\1</a></td>'
@@ -67,6 +70,7 @@ def match_bar(string):
     result=re.findall(a,string)
     return result
 
+    """ 得到所有贴吧的结果"""
 def get_all_bar():
     url='http://tieba.baidu.com/f/like/mylike?pn='
     page=1
@@ -81,19 +85,39 @@ def get_all_bar():
         if(html.find("下一页") == -1):
             break
         page+=1
+    # print result
     return result
 
 def get_tbs(value):
         resultr = opener.open(value)
         content = resultr.read().decode('utf-8')
+        # 第一种匹配tbs 的方法
         tbsPattern =re.compile(r'PageData.tbs = "(.{20,35})"')
         # print(content)
-        tbs =tbsPattern.search(content).group(1)
+        t =tbsPattern.search(content)
+        # print t.group(1)
+        # try:
+        #     tbs =tbsPattern.search(content).group(1)
+        if t !=None:
+            tbs =t.group(1)
+        else:
+            # 第二种匹配tbs 的方法
+            tbsPattern  =re.compile(r'\'tbs\':."(.{20,35})"')
+            t =tbsPattern.search(content)
+            tbs=t.group(1)
+            print tbs
+        # except Exception,e:
+        #     pass
+
+
+        # if type(tbs) ==NoneType:
+        #     print "s"
         # print(tbs)
         return tbs
 
 def add_all_sign(bars):
     for index,i in enumerate(bars):
+        # print i
         barurl = get_barurl(i)
         tbs = get_tbs(barurl)
         result=add_sign(i,tbs)
